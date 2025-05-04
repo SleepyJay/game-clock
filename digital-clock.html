@@ -36,7 +36,7 @@
 
         .digit {
             background-color: #222;
-            padding: 10px 5px;
+            padding: 10px 2px;
             border-radius: 5px;
             width: 60px;
             text-align: center;
@@ -71,6 +71,12 @@
 
         button:hover {
             background-color: #666;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
         }
 
         .label {
@@ -132,9 +138,9 @@
             </div>
         </div>
 
-        <div style="margin-top: 20px;">
+        <div class="button-container">
             <button onclick="setCurrentTime()">Set to Current Time</button>
-            <button id="clock-button" onclick="doClock()" style="margin-left: 10px;">Start Clock</button>
+            <button id="clock-button" onclick="doClock()">Start Clock</button>
         </div>
     </div>
 
@@ -188,27 +194,12 @@
             if (!selectedDigit) return;
 
             const id = selectedDigit.id;
-            
             if (event.key === 'ArrowUp') {
-                if (id === 'hour-ones') {
-                    incrementDigit(id, 0, 9, checkHourLimit);
-                } else if (id === 'hour-tens') {
-                    incrementDigit(id, 0, 2);
-                } else if (id === 'minute-tens' || id === 'second-tens') {
-                    incrementDigit(id, 0, 5);
-                } else {
-                    incrementDigit(id, 0, 9);
-                }
+                incrementDigit(id);
             } else if (event.key === 'ArrowDown') {
-                if (id === 'hour-ones') {
-                    decrementDigit(id, 0, 9, checkHourLimit);
-                } else if (id === 'hour-tens') {
-                    decrementDigit(id, 0, 2);
-                } else if (id === 'minute-tens' || id === 'second-tens') {
-                    decrementDigit(id, 0, 5);
-                } else {
-                    decrementDigit(id, 0, 9);
-                }
+                decrementDigit(id);
+            } else if (event.key >= '0' && event.key <= '9') {
+                setDigit(id, event.key);
             }
         });
 
@@ -231,10 +222,12 @@
         
         function setDigit(id, value) {
             let element = document.getElementById(id);
+            if (value > id_settings[id].max) {
+                return;
+            }
+
             id_settings[id].value = value;
             element.textContent = value;
-            
-            commitDigits();
         }        
         
         function commitDigits() {
