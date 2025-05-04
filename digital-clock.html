@@ -50,15 +50,9 @@
             padding: 0 5px;
         }
 
-        .controls {
+        .digit-container {
             display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .digit-control {
-            display: flex;
+            gap: 5px;
             flex-direction: column;
             align-items: center;
             width: 60px;
@@ -92,46 +86,49 @@
 <body>
     <div class="clock-container">
         <div class="clock">
-            <div class="digit" id="hour-tens">0</div>
-            <div class="digit" id="hour-ones">0</div>
+            <div class="digit-container">
+                <button onclick="incrementDigit('hour-tens', 0, 2)">+</button>
+                <div style="display: flex; gap: 5px;">
+                    <div class="digit" id="hour-tens">0</div>
+                </div>
+                <button onclick="decrementDigit('hour-tens', 0, 2)">-</button>
+            </div>
+            <div class="digit-container">
+                <button onclick="incrementDigit('hour-ones', 0, 9)">+</button>
+                <div style="display: flex; gap: 5px;">
+                    <div class="digit" id="hour-ones">0</div>
+                </div>
+                <button onclick="decrementDigit('hour-ones', 0, 9)">-</button>
+            </div>
             <div class="separator">:</div>
-            <div class="digit" id="minute-tens">0</div>
-            <div class="digit" id="minute-ones">0</div>
+            <div class="digit-container">
+                <button onclick="incrementDigit('minute-tens', 0, 5)">+</button>
+                <div style="display: flex; gap: 5px;">
+                    <div class="digit" id="minute-tens">0</div>
+                </div>
+                <button onclick="decrementDigit('minute-tens', 0, 5)">-</button>
+            </div>
+            <div class="digit-container">
+                <button onclick="incrementDigit('minute-ones', 0, 9)">+</button>
+                <div style="display: flex; gap: 5px;">
+                    <div class="digit" id="minute-ones">0</div>
+                </div>
+                <button onclick="decrementDigit('minute-ones', 0, 9)">-</button>
+            </div>
             <div class="separator">:</div>
-            <div class="digit" id="second-tens">0</div>
-            <div class="digit" id="second-ones">0</div>
-        </div>
-
-        <div class="controls">
-            <div class="digit-control">
-                <div class="label">Hour Tens</div>
-                <button onclick="incrementDigit('hour-tens', 0, 2)">▲</button>
-                <button onclick="decrementDigit('hour-tens', 0, 2)">▼</button>
+            <div class="digit-container">
+                <button onclick="incrementDigit('second-tens', 0, 5)">+</button>
+                <div style="display: flex; gap: 5px;">
+                    <div class="digit" id="second-tens">0</div>
+                </div>
+                <button onclick="decrementDigit('second-tens', 0, 5)">-</button>
             </div>
-            <div class="digit-control">
-                <div class="label">Hour Ones</div>
-                <button onclick="incrementDigit('hour-ones', 0, 9, checkHourLimit)">▲</button>
-                <button onclick="decrementDigit('hour-ones', 0, 9, checkHourLimit)">▼</button>
-            </div>
-            <div class="digit-control">
-                <div class="label">Min Tens</div>
-                <button onclick="incrementDigit('minute-tens', 0, 5)">▲</button>
-                <button onclick="decrementDigit('minute-tens', 0, 5)">▼</button>
-            </div>
-            <div class="digit-control">
-                <div class="label">Min Ones</div>
-                <button onclick="incrementDigit('minute-ones', 0, 9)">▲</button>
-                <button onclick="decrementDigit('minute-ones', 0, 9)">▼</button>
-            </div>
-            <div class="digit-control">
-                <div class="label">Sec Tens</div>
-                <button onclick="incrementDigit('second-tens', 0, 5)">▲</button>
-                <button onclick="decrementDigit('second-tens', 0, 5)">▼</button>
-            </div>
-            <div class="digit-control">
-                <div class="label">Sec Ones</div>
-                <button onclick="incrementDigit('second-ones', 0, 9)">▲</button>
-                <button onclick="decrementDigit('second-ones', 0, 9)">▼</button>
+            <div class="digit-container">
+                <button onclick="incrementDigit('second-ones', 0, 9)">+</button>
+                <div style="display: flex; gap: 5px;">
+                    <div class="digit" id="second-ones">0</div>
+                </div>
+                <button onclick="decrementDigit('second-ones', 0, 9)">-</button>
             </div>
         </div>
 
