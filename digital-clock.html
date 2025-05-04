@@ -87,61 +87,92 @@
     <div class="clock-container">
         <div class="clock">
             <div class="digit-container">
-                <button onclick="incrementDigit('hour-tens', 0, 2)">+</button>
+                <button onclick="incrementDigit('hour-tens')">+</button>
                 <div style="display: flex; gap: 5px;">
                     <div class="digit" id="hour-tens">0</div>
                 </div>
-                <button onclick="decrementDigit('hour-tens', 0, 2)">-</button>
+                <button onclick="decrementDigit('hour-tens')">-</button>
             </div>
             <div class="digit-container">
-                <button onclick="incrementDigit('hour-ones', 0, 9)">+</button>
+                <button onclick="incrementDigit('hour-ones')">+</button>
                 <div style="display: flex; gap: 5px;">
                     <div class="digit" id="hour-ones">0</div>
                 </div>
-                <button onclick="decrementDigit('hour-ones', 0, 9)">-</button>
+                <button onclick="decrementDigit('hour-ones')">-</button>
             </div>
             <div class="separator">:</div>
             <div class="digit-container">
-                <button onclick="incrementDigit('minute-tens', 0, 5)">+</button>
+                <button onclick="incrementDigit('minute-tens')">+</button>
                 <div style="display: flex; gap: 5px;">
                     <div class="digit" id="minute-tens">0</div>
                 </div>
-                <button onclick="decrementDigit('minute-tens', 0, 5)">-</button>
+                <button onclick="decrementDigit('minute-tens')">-</button>
             </div>
             <div class="digit-container">
-                <button onclick="incrementDigit('minute-ones', 0, 9)">+</button>
+                <button onclick="incrementDigit('minute-ones')">+</button>
                 <div style="display: flex; gap: 5px;">
                     <div class="digit" id="minute-ones">0</div>
                 </div>
-                <button onclick="decrementDigit('minute-ones', 0, 9)">-</button>
+                <button onclick="decrementDigit('minute-ones')">-</button>
             </div>
             <div class="separator">:</div>
             <div class="digit-container">
-                <button onclick="incrementDigit('second-tens', 0, 5)">+</button>
+                <button onclick="incrementDigit('second-tens')">+</button>
                 <div style="display: flex; gap: 5px;">
                     <div class="digit" id="second-tens">0</div>
                 </div>
-                <button onclick="decrementDigit('second-tens', 0, 5)">-</button>
+                <button onclick="decrementDigit('second-tens')">-</button>
             </div>
             <div class="digit-container">
-                <button onclick="incrementDigit('second-ones', 0, 9)">+</button>
+                <button onclick="incrementDigit('second-ones')">+</button>
                 <div style="display: flex; gap: 5px;">
                     <div class="digit" id="second-ones">0</div>
                 </div>
-                <button onclick="decrementDigit('second-ones', 0, 9)">-</button>
+                <button onclick="decrementDigit('second-ones')">-</button>
             </div>
         </div>
 
         <div style="margin-top: 20px;">
             <button onclick="setCurrentTime()">Set to Current Time</button>
-            <button onclick="startClock()" style="margin-left: 10px;">Start Clock</button>
-            <button onclick="stopClock()" style="margin-left: 10px;">Stop Clock</button>
+            <button id="clock-button" onclick="doClock()" style="margin-left: 10px;">Start Clock</button>
         </div>
     </div>
 
     <script>
         let clockInterval;
         let isRunning = false;
+        let id_settings = {
+            'hour-tens': {
+                'value': 0,
+                'max': 2,
+            },
+            'hour-ones': {
+                'value': 0,
+                'max': 9,
+            },
+            'minute-tens': {
+                'value': 0,
+                'max': 5,
+            },
+            'minute-ones': {
+                'value': 0,
+                'max': 9,
+            },
+            'second-tens': {
+                'value': 0,
+                'max': 5,
+            },
+            'second-ones': {
+                'value': 0,
+                'max': 9,           
+            },
+        }
+
+        let ids_to_check = [
+            'second-ones', 'second-tens',
+            'minute-ones', 'minute-tens',
+            'hour-ones', 'hour-tens'
+        ];
 
         // Make digits clickable to select for keyboard control
         document.querySelectorAll('.digit').forEach(digit => {
@@ -181,31 +212,62 @@
             }
         });
 
-        function incrementDigit(id, min, max, callback) {
-            let element = document.getElementById(id);
-            let value = parseInt(element.textContent);
-            value = (value + 1) > max ? min : value + 1;
-            element.textContent = value;
-            
-            if (callback) callback();
+        function incrementDigit(id, callback) {
+            changeDigit(id, 1, callback);
         }
 
-        function decrementDigit(id, min, max, callback) {
+        function decrementDigit(id, callback) {
+            changeDigit(id, -1, callback);
+        }
+        
+        function changeDigit(id, amount, callback) {
             let element = document.getElementById(id);
             let value = parseInt(element.textContent);
-            value = (value - 1) < min ? max : value - 1;
-            element.textContent = value;
+            id_settings[id].value = value + amount;
             
-            if (callback) callback();
+            commitDigits(callback);       
         }
-
-        function checkHourLimit() {
-            const hourTens = parseInt(document.getElementById('hour-tens').textContent);
-            const hourOnes = parseInt(document.getElementById('hour-ones').textContent);
+        
+        function setDigit(id, value, callback) {
+            let element = document.getElementById(id);
+            id_settings[id].value = parseInt(element.textContent);
             
-            if (hourTens === 2 && hourOnes > 3) {
-                document.getElementById('hour-ones').textContent = '3';
+            commitDigits(callback);       
+        }        
+        
+        function commitDigits(callback) {
+            for (let i=0; i<ids_to_check.length; i++) {
+                let id = ids_to_check[i];
+                let settings = id_settings[id];
+                let value = settings.value;
+                let max = settings.max;
+                let mod_vals = divmod(value, max + 1);
+                console.debug([id, value, max, mod_vals]);
+
+                if (value < 0) {
+                    if (i > 0) {
+                        prevTick = ids_to_check[i - 1];
+                        prevId = id_settings[prevTick];
+                        prevId.value += mod_vals[0];
+                    }
+                } else {
+                    settings.value = mod_vals[1];
+
+                    if (i < 5) {
+                        nextTick = ids_to_check[i + 1];
+                        nextId = id_settings[nextTick];
+                        nextId.value += mod_vals[0];
+                    }
+                }
+
+                document.getElementById(id).textContent = settings.value;
             }
+            
+            if (callback) callback();
+        }
+
+        function divmod(n, d) {
+            return [Math.floor(n/d), n % d];
         }
 
         function setCurrentTime() {
@@ -213,75 +275,46 @@
             const hours = now.getHours();
             const minutes = now.getMinutes();
             const seconds = now.getSeconds();
-            
-            document.getElementById('hour-tens').textContent = Math.floor(hours / 10);
-            document.getElementById('hour-ones').textContent = hours % 10;
-            document.getElementById('minute-tens').textContent = Math.floor(minutes / 10);
-            document.getElementById('minute-ones').textContent = minutes % 10;
-            document.getElementById('second-tens').textContent = Math.floor(seconds / 10);
-            document.getElementById('second-ones').textContent = seconds % 10;
+
+            console.debug([hours, minutes, seconds]);
+
+            id_settings['hour-tens'].value = Math.floor(hours / 10);
+            document.getElementById('hour-tens').textContent = id_settings['hour-tens'].value;
+
+            id_settings['hour-ones'].value = hours % 10;
+            document.getElementById('hour-ones').textContent = id_settings['hour-ones'].value;
+
+            id_settings['minute-tens'].value = Math.floor(minutes / 10);
+            document.getElementById('minute-tens').textContent = id_settings['minute-tens'].value;
+
+            id_settings['minute-ones'].value = minutes % 10;
+            document.getElementById('minute-ones').textContent = id_settings['minute-ones'].value;
+
+            id_settings['second-tens'].value = Math.floor(seconds / 10);
+            document.getElementById('second-tens').textContent = id_settings['second-tens'].value;
+
+            id_settings['second-ones'].value = seconds % 10;
+            document.getElementById('second-ones').textContent = id_settings['second-ones'].value;
         }
 
-        function startClock() {
-            if (isRunning) return;
+        function doClock() {
+            clockButton = document.getElementById('clock-button');
+            if (isRunning) {
+                // stop running clock...
+                clearInterval(clockInterval);
+                clockButton.textContent = 'Start Clock';
+                isRunning = false;
+                return;
+            }
             
             isRunning = true;
-            clockInterval = setInterval(() => {
-                // Increment seconds
-                let secondOnes = parseInt(document.getElementById('second-ones').textContent);
-                secondOnes++;
-                
-                if (secondOnes > 9) {
-                    secondOnes = 0;
-                    let secondTens = parseInt(document.getElementById('second-tens').textContent);
-                    secondTens++;
-                    
-                    if (secondTens > 5) {
-                        secondTens = 0;
-                        let minuteOnes = parseInt(document.getElementById('minute-ones').textContent);
-                        minuteOnes++;
-                        
-                        if (minuteOnes > 9) {
-                            minuteOnes = 0;
-                            let minuteTens = parseInt(document.getElementById('minute-tens').textContent);
-                            minuteTens++;
-                            
-                            if (minuteTens > 5) {
-                                minuteTens = 0;
-                                let hourOnes = parseInt(document.getElementById('hour-ones').textContent);
-                                hourOnes++;
-                                
-                                if (hourOnes > 9 || (parseInt(document.getElementById('hour-tens').textContent) === 2 && hourOnes > 3)) {
-                                    hourOnes = 0;
-                                    let hourTens = parseInt(document.getElementById('hour-tens').textContent);
-                                    hourTens++;
-                                    
-                                    if (hourTens > 2) {
-                                        hourTens = 0;
-                                    }
-                                    
-                                    document.getElementById('hour-tens').textContent = hourTens;
-                                }
-                                
-                                document.getElementById('hour-ones').textContent = hourOnes;
-                            }
-                            
-                            document.getElementById('minute-tens').textContent = minuteTens;
-                        }
-                        
-                        document.getElementById('minute-ones').textContent = minuteOnes;
-                    }
-                    
-                    document.getElementById('second-tens').textContent = secondTens;
-                }
-                
-                document.getElementById('second-ones').textContent = secondOnes;
-            }, 1000);
-        }
+            clockButton.textContent = 'Stop Clock';
+            let change = 1;
 
-        function stopClock() {
-            clearInterval(clockInterval);
-            isRunning = false;
+            clockInterval = setInterval(() => {
+                id_settings['second-ones'].value += change;
+                commitDigits();
+            }, 1000);
         }
 
         // Initialize with zeros
