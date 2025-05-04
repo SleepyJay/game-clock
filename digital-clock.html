@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Clock with Settable Digits</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            background-color: #1a1a1a;
+            color: white;
+        }
+
+        .clock-container {
+            background-color: #000;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .clock {
+            display: flex;
+            gap: 10px;
+            font-size: 80px;
+            font-family: 'Courier New', monospace;
+            color: #00ff00;
+            margin-bottom: 20px;
+        }
+
+        .digit {
+            background-color: #222;
+            padding: 10px 5px;
+            border-radius: 5px;
+            width: 60px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .separator {
+            display: flex;
+            align-items: center;
+            padding: 0 5px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .digit-control {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 60px;
+        }
+
+        button {
+            background-color: #444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px;
+            width: 100%;
+            cursor: pointer;
+            margin: 2px 0;
+        }
+
+        button:hover {
+            background-color: #666;
+        }
+
+        .label {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .selected {
+            box-shadow: 0 0 10px #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="clock-container">
+        <div class="clock">
+            <div class="digit" id="hour-tens">0</div>
+            <div class="digit" id="hour-ones">0</div>
+            <div class="separator">:</div>
+            <div class="digit" id="minute-tens">0</div>
+            <div class="digit" id="minute-ones">0</div>
+            <div class="separator">:</div>
+            <div class="digit" id="second-tens">0</div>
+            <div class="digit" id="second-ones">0</div>
+        </div>
+
+        <div class="controls">
+            <div class="digit-control">
+                <div class="label">Hour Tens</div>
+                <button onclick="incrementDigit('hour-tens', 0, 2)">▲</button>
+                <button onclick="decrementDigit('hour-tens', 0, 2)">▼</button>
+            </div>
+            <div class="digit-control">
+                <div class="label">Hour Ones</div>
+                <button onclick="incrementDigit('hour-ones', 0, 9, checkHourLimit)">▲</button>
+                <button onclick="decrementDigit('hour-ones', 0, 9, checkHourLimit)">▼</button>
+            </div>
+            <div class="digit-control">
+                <div class="label">Min Tens</div>
+                <button onclick="incrementDigit('minute-tens', 0, 5)">▲</button>
+                <button onclick="decrementDigit('minute-tens', 0, 5)">▼</button>
+            </div>
+            <div class="digit-control">
+                <div class="label">Min Ones</div>
+                <button onclick="incrementDigit('minute-ones', 0, 9)">▲</button>
+                <button onclick="decrementDigit('minute-ones', 0, 9)">▼</button>
+            </div>
+            <div class="digit-control">
+                <div class="label">Sec Tens</div>
+                <button onclick="incrementDigit('second-tens', 0, 5)">▲</button>
+                <button onclick="decrementDigit('second-tens', 0, 5)">▼</button>
+            </div>
+            <div class="digit-control">
+                <div class="label">Sec Ones</div>
+                <button onclick="incrementDigit('second-ones', 0, 9)">▲</button>
+                <button onclick="decrementDigit('second-ones', 0, 9)">▼</button>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button onclick="setCurrentTime()">Set to Current Time</button>
+            <button onclick="startClock()" style="margin-left: 10px;">Start Clock</button>
+            <button onclick="stopClock()" style="margin-left: 10px;">Stop Clock</button>
+        </div>
+    </div>
+
+    <script>
+        let clockInterval;
+        let isRunning = false;
+
+        // Make digits clickable to select for keyboard control
+        document.querySelectorAll('.digit').forEach(digit => {
+            digit.addEventListener('click', function() {
+                document.querySelectorAll('.digit').forEach(d => d.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        // Add keyboard controls
+        document.addEventListener('keydown', function(event) {
+            const selectedDigit = document.querySelector('.digit.selected');
+            if (!selectedDigit) return;
+
+            const id = selectedDigit.id;
+            
+            if (event.key === 'ArrowUp') {
+                if (id === 'hour-ones') {
+                    incrementDigit(id, 0, 9, checkHourLimit);
+                } else if (id === 'hour-tens') {
+                    incrementDigit(id, 0, 2);
+                } else if (id === 'minute-tens' || id === 'second-tens') {
+                    incrementDigit(id, 0, 5);
+                } else {
+                    incrementDigit(id, 0, 9);
+                }
+            } else if (event.key === 'ArrowDown') {
+                if (id === 'hour-ones') {
+                    decrementDigit(id, 0, 9, checkHourLimit);
+                } else if (id === 'hour-tens') {
+                    decrementDigit(id, 0, 2);
+                } else if (id === 'minute-tens' || id === 'second-tens') {
+                    decrementDigit(id, 0, 5);
+                } else {
+                    decrementDigit(id, 0, 9);
+                }
+            }
+        });
+
+        function incrementDigit(id, min, max, callback) {
+            let element = document.getElementById(id);
+            let value = parseInt(element.textContent);
+            value = (value + 1) > max ? min : value + 1;
+            element.textContent = value;
+            
+            if (callback) callback();
+        }
+
+        function decrementDigit(id, min, max, callback) {
+            let element = document.getElementById(id);
+            let value = parseInt(element.textContent);
+            value = (value - 1) < min ? max : value - 1;
+            element.textContent = value;
+            
+            if (callback) callback();
+        }
+
+        function checkHourLimit() {
+            const hourTens = parseInt(document.getElementById('hour-tens').textContent);
+            const hourOnes = parseInt(document.getElementById('hour-ones').textContent);
+            
+            if (hourTens === 2 && hourOnes > 3) {
+                document.getElementById('hour-ones').textContent = '3';
+            }
+        }
+
+        function setCurrentTime() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            
+            document.getElementById('hour-tens').textContent = Math.floor(hours / 10);
+            document.getElementById('hour-ones').textContent = hours % 10;
+            document.getElementById('minute-tens').textContent = Math.floor(minutes / 10);
+            document.getElementById('minute-ones').textContent = minutes % 10;
+            document.getElementById('second-tens').textContent = Math.floor(seconds / 10);
+            document.getElementById('second-ones').textContent = seconds % 10;
+        }
+
+        function startClock() {
+            if (isRunning) return;
+            
+            isRunning = true;
+            clockInterval = setInterval(() => {
+                // Increment seconds
+                let secondOnes = parseInt(document.getElementById('second-ones').textContent);
+                secondOnes++;
+                
+                if (secondOnes > 9) {
+                    secondOnes = 0;
+                    let secondTens = parseInt(document.getElementById('second-tens').textContent);
+                    secondTens++;
+                    
+                    if (secondTens > 5) {
+                        secondTens = 0;
+                        let minuteOnes = parseInt(document.getElementById('minute-ones').textContent);
+                        minuteOnes++;
+                        
+                        if (minuteOnes > 9) {
+                            minuteOnes = 0;
+                            let minuteTens = parseInt(document.getElementById('minute-tens').textContent);
+                            minuteTens++;
+                            
+                            if (minuteTens > 5) {
+                                minuteTens = 0;
+                                let hourOnes = parseInt(document.getElementById('hour-ones').textContent);
+                                hourOnes++;
+                                
+                                if (hourOnes > 9 || (parseInt(document.getElementById('hour-tens').textContent) === 2 && hourOnes > 3)) {
+                                    hourOnes = 0;
+                                    let hourTens = parseInt(document.getElementById('hour-tens').textContent);
+                                    hourTens++;
+                                    
+                                    if (hourTens > 2) {
+                                        hourTens = 0;
+                                    }
+                                    
+                                    document.getElementById('hour-tens').textContent = hourTens;
+                                }
+                                
+                                document.getElementById('hour-ones').textContent = hourOnes;
+                            }
+                            
+                            document.getElementById('minute-tens').textContent = minuteTens;
+                        }
+                        
+                        document.getElementById('minute-ones').textContent = minuteOnes;
+                    }
+                    
+                    document.getElementById('second-tens').textContent = secondTens;
+                }
+                
+                document.getElementById('second-ones').textContent = secondOnes;
+            }, 1000);
+        }
+
+        function stopClock() {
+            clearInterval(clockInterval);
+            isRunning = false;
+        }
+
+        // Initialize with zeros
+        setCurrentTime();
+    </script>
+</body>
+</html>
