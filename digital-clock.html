@@ -212,74 +212,61 @@
             }
         });
 
-        function incrementDigit(id, callback) {
-            changeDigit(id, 1, callback);
+        // kept these for later, plus might be easier to use non-one values
+        function incrementDigit(id) {
+            changeDigit(id, 1);
         }
 
-        function decrementDigit(id, callback) {
-            changeDigit(id, -1, callback);
+        function decrementDigit(id) {
+            changeDigit(id, -1);
         }
         
-        function changeDigit(id, amount, callback) {
+        function changeDigit(id, amount) {
             let element = document.getElementById(id);
             let value = parseInt(element.textContent);
             id_settings[id].value = value + amount;
             
-            commitDigits(callback);       
+            commitDigits();
         }
         
-        function setDigit(id, value, callback) {
+        function setDigit(id, value) {
             let element = document.getElementById(id);
-            id_settings[id].value = parseInt(element.textContent);
+            id_settings[id].value = value;
+            element.textContent = value;
             
-            commitDigits(callback);       
+            commitDigits();
         }        
         
-        function commitDigits(callback) {
+        function commitDigits() {
             for (let i=0; i<ids_to_check.length; i++) {
                 let id = ids_to_check[i];
                 let settings = id_settings[id];
                 let value = settings.value;
                 let max = settings.max;
+                let mod_vals = []
 
+                if(i === 4) {
+                    let hrTensVal = id_settings['hour-tens'].value
+                    if ((value < 0 && hrTensVal <= 0) || (value >= 0 && hrTensVal >= 2)) {
+                        max = 3;
+                    }
+                }
+
+                mod_vals = divmod(value, max + 1);
                 if (value < 0) {
-                    if(i === 4) {
-                        if(id_settings['hour-tens'].value <= 0) {
-                            max = 3;
-                        }
-                    }
-
-                    let mod_vals = divmod(value, max + 1);
-                    console.debug([id, value, max, mod_vals]);
-
-                    if (i < 5) {
-                        prevTick = ids_to_check[i + 1];
-                        prevId = id_settings[prevTick];
-                        prevId.value += mod_vals[0];
-                    }
                     settings.value = max
                 } else {
-                    if(i === 4) {
-                        if(id_settings['hour-tens'].value >= 2) {
-                            max = 3;
-                        }
-                    }
-
-                    let mod_vals = divmod(value, max + 1);
-                    console.debug([id, value, max, mod_vals]);
                     settings.value = mod_vals[1];
+                }
 
-                    if (i < 5) {
-                        nextTick = ids_to_check[i + 1];
-                        nextId = id_settings[nextTick];
-                        nextId.value += mod_vals[0];
-                    }
+                if (i < 5) {
+                    nextTick = ids_to_check[i + 1];
+                    nextId = id_settings[nextTick];
+                    nextId.value += mod_vals[0];
                 }
 
                 document.getElementById(id).textContent = settings.value;
             }
-            
-            if (callback) callback();
         }
 
         function divmod(n, d) {
