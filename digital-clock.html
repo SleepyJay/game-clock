@@ -83,6 +83,19 @@
             font-size: 14px;
             margin-bottom: 5px;
         }
+        input {
+            width: 100%;
+            padding: 5px;
+            font-size: 14px;
+            border-radius: 5px;
+            border: 1px solid #444;
+        }
+
+        .interval-box {
+            display: flex;
+            gap: 10px;
+            padding: 5px 0;
+        }
 
         .selected {
             box-shadow: 0 0 10px #00ff00;
@@ -139,14 +152,27 @@
         </div>
 
         <div class="button-container">
-            <button onclick="setCurrentTime()">Set to Current Time</button>
-            <button id="clock-button" onclick="doClock()">Start Clock</button>
+            <div>
+                <button onclick="setCurrentTime()">Set to Current Time</button>
+                <button id="clock-button" onclick="doClock()">Start Clock</button>
+            </div>
+            <div style="display: flex; flex-direction: column;">
+                <div>
+                    <button onclick="midNightTime()">Set to Midnight</button>
+                </div>
+                <div class="interval-box">
+                    <label for="interval-seconds" class="label">Interval (seconds)</label>
+                    <input type="number" id="interval-seconds" value="1" max="30" step=1>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         let clockInterval;
         let isRunning = false;
+        let intervalValue = 1000;
+        let intervalSeconds = 1;
         let id_settings = {
             'hour-tens': {
                 'value': 0,
@@ -183,8 +209,12 @@
         // Make digits clickable to select for keyboard control
         document.querySelectorAll('.digit').forEach(digit => {
             digit.addEventListener('click', function() {
-                document.querySelectorAll('.digit').forEach(d => d.classList.remove('selected'));
-                this.classList.add('selected');
+                if (this.classList.contains('selected')) {
+                    this.classList.remove('selected');
+                } else {
+                    document.querySelectorAll('.digit').forEach(d => d.classList.remove('selected'));
+                    this.classList.add('selected');
+                }
             });
         });
 
@@ -221,13 +251,28 @@
         }
         
         function setDigit(id, value) {
-            let element = document.getElementById(id);
-            if (value > id_settings[id].max) {
+            let max = id_settings[id].max;
+            let int_val = parseInt(value);
+
+            if (value > max) {
                 return;
             }
 
-            id_settings[id].value = value;
-            element.textContent = value;
+            // I don't like this special case... but commitDigits
+            // doesn't work for some reason when I'm setting like this
+            if(id === 'hour-tens' && int_val === 2) {
+                if (id_settings['hour-ones'].value > 3) {
+                    id_settings['hour-ones'].value = 3;
+                    document.getElementById('hour-ones').textContent = 3;
+                }
+            } else if(id === 'hour-ones' && int_val > 3) {
+                if (id_settings['hour-tens'].value === 2) {
+                    int_val = 3;
+                }
+            }
+
+            id_settings[id].value = int_val;
+            document.getElementById(id).textContent = int_val;
         }        
         
         function commitDigits() {
@@ -258,7 +303,7 @@
                     nextId.value += mod_vals[0];
                 }
 
-                document.getElementById(id).textContent = settings.value;
+                document.getElementById(id).textContent = Math.round(settings.value * 100) / 100;
             }
         }
 
@@ -302,15 +347,25 @@
                 isRunning = false;
                 return;
             }
-            
+
+            intervalSeconds =  parseFloat(document.getElementById('interval-seconds').value);
+            if(intervalSeconds === 0) {
+                return;
+            }
+
             isRunning = true;
             clockButton.textContent = 'Stop Clock';
-            let change = 1;
-
             clockInterval = setInterval(() => {
-                id_settings['second-ones'].value += change;
+                id_settings['second-ones'].value += intervalSeconds;
                 commitDigits();
-            }, 1000);
+            }, intervalValue);
+        }
+
+        function midNightTime() {
+            for(let id in id_settings) {
+                id_settings[id].value = 0;
+                document.getElementById(id).textContent = "0";
+            }
         }
 
         // Initialize with zeros
