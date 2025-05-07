@@ -77,14 +77,17 @@
             display: flex;
             gap: 10px;
             margin-top: 20px;
+            flex-direction: column;
+            align-items: center;
         }
 
         .label {
             font-size: 14px;
             margin-bottom: 5px;
+
         }
         input {
-            width: 100%;
+            width: 40px;
             padding: 5px;
             font-size: 14px;
             border-radius: 5px;
@@ -152,19 +155,17 @@
         </div>
 
         <div class="button-container">
-            <div>
+            <div class="interval-box">
                 <button onclick="setCurrentTime()">Set to Current Time</button>
+                <button onclick="midNightTime()">Set to Midnight</button>
                 <button id="clock-button" onclick="doClock()">Start Clock</button>
             </div>
-            <div style="display: flex; flex-direction: column;">
-                <div>
-                    <button onclick="midNightTime()">Set to Midnight</button>
-                </div>
-                <div class="interval-box">
-                    <label for="interval-seconds" class="label">Interval (seconds)</label>
-                    <input type="number" id="interval-seconds" value="1" max="30" step=1>
-                </div>
+            <div class="interval-box">
+                <label for="clock-seconds" class="label">Clock Interval</label>
+                <input type="number" id="clock-seconds" value="1" max="30" step=1>
+                <button onclick="changeDigit('second-ones', 6)">+6 seconds</button>
             </div>
+
         </div>
     </div>
 
@@ -339,7 +340,7 @@
         }
 
         function doClock() {
-            clockButton = document.getElementById('clock-button');
+            let clockButton = document.getElementById('clock-button');
             if (isRunning) {
                 // stop running clock...
                 clearInterval(clockInterval);
@@ -348,7 +349,7 @@
                 return;
             }
 
-            intervalSeconds =  parseFloat(document.getElementById('interval-seconds').value);
+            intervalSeconds = parseFloat(document.getElementById('clock-seconds').value);
             if(intervalSeconds === 0) {
                 return;
             }
