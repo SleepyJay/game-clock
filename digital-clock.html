@@ -259,52 +259,46 @@
                 return;
             }
 
-            // I don't like this special case... but commitDigits
-            // doesn't work for some reason when I'm setting like this
-            if(id === 'hour-tens' && int_val === 2) {
-                if (id_settings['hour-ones'].value > 3) {
-                    id_settings['hour-ones'].value = 3;
-                    document.getElementById('hour-ones').textContent = 3;
-                }
-            } else if(id === 'hour-ones' && int_val > 3) {
-                if (id_settings['hour-tens'].value === 2) {
-                    int_val = 3;
-                }
-            }
-
             id_settings[id].value = int_val;
-            document.getElementById(id).textContent = int_val;
+            commitDigits();
         }        
         
         function commitDigits() {
-            for (let i=0; i<ids_to_check.length; i++) {
+            for(let i = 0; i < ids_to_check.length; i++) {
                 let id = ids_to_check[i];
                 let settings = id_settings[id];
                 let value = settings.value;
                 let max = settings.max;
-                let mod_vals = []
 
-                if(i === 4) {
-                    let hrTensVal = id_settings['hour-tens'].value
-                    if ((value < 0 && hrTensVal <= 0) || (value >= 0 && hrTensVal >= 2)) {
-                        max = 3;
-                    }
-                }
-
-                mod_vals = divmod(value, max + 1);
-                if (value < 0) {
-                    settings.value = max
+                let mod_vals = divmod(settings.value, settings.max + 1);
+                if (settings.value < 0) {
+                    settings.value = settings.max;
                 } else {
                     settings.value = mod_vals[1];
                 }
 
                 if (i < 5) {
-                    nextTick = ids_to_check[i + 1];
-                    nextId = id_settings[nextTick];
+                    let nextTick = ids_to_check[i + 1];
+                    let nextId = id_settings[nextTick];
                     nextId.value += mod_vals[0];
                 }
 
-                document.getElementById(id).textContent = Math.round(settings.value * 100) / 100;
+                /*
+                    ht == 0, ho < 0 => ht: 2, ho: 3
+                    ht == 2, ho > 3 => ht: 0, ho: 0
+                 */
+                if(id_settings['hour-tens'].value === 0 && id_settings['hour-ones'].value < 0) {
+                    id_settings['hour-ones'].value = 3;
+                    id_settings['hour-tens'].value = 2;
+
+                }
+
+                if(id_settings['hour-tens'].value === 2 && id_settings['hour-ones'].value > 3) {
+                    id_settings['hour-ones'].value = 0;
+                    id_settings['hour-tens'].value = 0;
+                }
+
+                document.getElementById(id).textContent = (Math.round(settings.value * 100) / 100).toString();
             }
         }
 
