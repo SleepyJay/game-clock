@@ -283,17 +283,13 @@
                     nextId.value += mod_vals[0];
                 }
 
-                /*
-                    ht == 0, ho < 0 => ht: 2, ho: 3
-                    ht == 2, ho > 3 => ht: 0, ho: 0
-                 */
-                if(id_settings['hour-tens'].value === 0 && id_settings['hour-ones'].value < 0) {
+                if (id_settings['hour-tens'].value === 0 && id_settings['hour-ones'].value < 0) {
                     id_settings['hour-ones'].value = 3;
                     id_settings['hour-tens'].value = 2;
 
                 }
 
-                if(id_settings['hour-tens'].value === 2 && id_settings['hour-ones'].value > 3) {
+                if (id_settings['hour-tens'].value === 2 && id_settings['hour-ones'].value > 3) {
                     id_settings['hour-ones'].value = 0;
                     id_settings['hour-tens'].value = 0;
                 }
