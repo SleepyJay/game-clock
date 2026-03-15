@@ -9,8 +9,7 @@ Game Clock is just a digital clock, but one that can be manually operated. The m
 
 I used Claude to generate the initial setup and design. But I wanted to code some features myself. Honestly, this is as much a project I wanted for a specific purpose as it is practicing AI-coding-assistance and UI-tweaking.
 
-One edge case that needed some thought was what to do if the hour-ones box was >3 and you moved the hour-tens digit to 2. Should it reset to 00 (what I chose)? An argument could be made that it could prevent the hour-tens digit from changing in that situation. Or to just put you at the equivalent -24 hour (like, 27 would become 03, etc.) 
-
+One edge case that needed some thought was what to do if the hour-ones box was >3 and you moved the hour-tens digit to 2. Should it reset to 00? While this is what I chose, an argument could be made that it could prevent the hour-tens digit from changing in that situation. Or to just put you at the equivalent -24 hour (like, 27 would become 03, etc.) 
 
 ## Kanban
 This section approximates a kanban board, so I can plan out what I'm doing. 
